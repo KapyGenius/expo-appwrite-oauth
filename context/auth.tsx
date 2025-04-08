@@ -2,26 +2,35 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { AuthError, makeRedirectUri } from 'expo-auth-session';
 import { Client, Account, ID, Models, OAuthProvider } from 'react-native-appwrite';
+import { Client as WebCLient, Account as WebAccount } from 'appwrite';
 import { Platform } from 'react-native';
 
 
-const client = new Client()
-    .setProject('expo-appwrite-auth')
-    .setPlatform('com.kapygenius.expo-appwrite-oauth');
+let client: Client | WebCLient;
+let account: Account | WebAccount;
+
+if (Platform.OS === 'web') {
+    client = new WebCLient()
+        .setProject('expo-appwrite-auth')
+    account = new WebAccount(client);
+} else {
+    client = new Client()
+        .setProject('expo-appwrite-auth')
+        .setPlatform('com.kapygenius.expo-appwrite-oauth');
+    account = new Account(client);
+}
+
 
 const AuthContext = createContext({
     user: null as Models.User<Models.Preferences> | null,
     EmailSignIn: (email: string, password: string) => Promise.resolve(),
     EmailRegister: (email: string, password: string, name: string) => Promise.resolve(),
-    OauthSignIn: (provider: string) => Promise.resolve(),
+    OauthSignIn: (provider: OAuthProvider) => Promise.resolve(),
     signOut: () => { },
     fetchWithAuth: (url: string, options: RequestInit) => Promise.resolve(new Response()),
     isLoading: false,
     error: null as AuthError | null,
 });
-
-
-const account = new Account(client);
 
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -55,11 +64,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(await account.get());
     };
 
-    const OauthSignIn = async (provider: string) => {
+    const OauthSignIn = async (provider: OAuthProvider) => {
         console.log("Oauth signIn");
         const deepLink = new URL(makeRedirectUri({preferLocalhost: true}));
         if(Platform.OS == 'web') {
-            
+            console.log("Web Oauth signIn " + deepLink);
+            account.createOAuth2Session(
+                provider,
+                `${deepLink}`,
+                `${deepLink}`,
+            );
+            return;
         }
         if (!deepLink.hostname) {
             deepLink.hostname = 'localhost';
@@ -67,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const scheme = `${deepLink.protocol}//`;
         // Start OAuth flow
         const loginUrl = await account.createOAuth2Token(
-            OAuthProvider.Google,
+            provider,
             `${deepLink}`,
             `${deepLink}`,
         );

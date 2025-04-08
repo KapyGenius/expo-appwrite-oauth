@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, Button } from 'rea
 import React, { useState } from 'react';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/context/auth';
+import { OAuthProvider } from 'react-native-appwrite';
 
 
 export default function App() {
@@ -58,7 +59,7 @@ export default function App() {
                 />
                 <Button
                     title="Login with Google"
-                    onPress={() => OauthSignIn('google')}
+                    onPress={() => OauthSignIn(OAuthProvider.Google)}
                 />
 
             </View>
