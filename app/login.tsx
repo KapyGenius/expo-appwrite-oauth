@@ -65,6 +65,11 @@ export default function App() {
                     title="Login with Apple"
                     onPress={() => OauthSignIn(OAuthProvider.Apple)}
                 />
+                
+                <Button
+                    title="Login with Github"
+                    onPress={() => OauthSignIn(OAuthProvider.Github)}
+                />
 
             </View>
         </View>
