@@ -1,11 +1,11 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Button } from 'react-native';
 import React, { useState } from 'react';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/context/auth';
 
 
 export default function App() {
-    const { user, EmailSignIn, EmailRegister } = useAuth();
+    const { user, EmailSignIn, EmailRegister, OauthSignIn} = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
@@ -48,19 +48,19 @@ export default function App() {
                     onChangeText={(text) => setName(text)}
                 />
 
-                <TouchableOpacity
-                    style={styles.button}
+                <Button
+                    title="Login"
                     onPress={() => login(email, password)}
-                >
-                    <Text>Login</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.button}
+                />
+                <Button
+                    title="Register"
                     onPress={() => register(email, password, name)}
-                >
-                    <Text>Register</Text>
-                </TouchableOpacity>
+                />
+                <Button
+                    title="Login with Google"
+                    onPress={() => OauthSignIn('google')}
+                />
+
             </View>
         </View>
 
@@ -78,13 +78,7 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       marginBottom: 10,
       paddingHorizontal: 10,
-    },
-    button: {
-      backgroundColor: 'gray',
-      padding: 10,
-      marginBottom: 10,
-      alignItems: 'center',
-    },
+    }
   });
   
 

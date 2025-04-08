@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import { AuthError, makeRedirectUri } from 'expo-auth-session';
 import { Client, Account, ID, Models, OAuthProvider } from 'react-native-appwrite';
+import { Platform } from 'react-native';
 
 
 const client = new Client()
@@ -56,6 +57,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const OauthSignIn = async (provider: string) => {
         console.log("Oauth signIn");
+        const deepLink = new URL(makeRedirectUri({preferLocalhost: true}));
+        if(Platform.OS == 'web') {
+            
+        }
+        if (!deepLink.hostname) {
+            deepLink.hostname = 'localhost';
+        }
+        const scheme = `${deepLink.protocol}//`;
+        // Start OAuth flow
+        const loginUrl = await account.createOAuth2Token(
+            OAuthProvider.Google,
+            `${deepLink}`,
+            `${deepLink}`,
+        );
+
+        // Open loginUrl and listen for the scheme redirect
+        const result = await WebBrowser.openAuthSessionAsync(`${loginUrl}`, scheme);
+        console.log("Result: ", result);
+
+        if (result.type !== 'success') {
+            console.error('OAuth error:', result);
+            return;
+        }
+
+        // Extract credentials from OAuth redirect URL
+        const url = new URL(result.url);
+        const secret = url.searchParams.get('secret');
+        const userId = url.searchParams.get('userId');
+        
+        console.log("URL", url)
+        if(userId && secret)
+            await account.createSession(userId, secret);
+        setUser(await account.get());
+
     };
 
     const signOut = async () => {
