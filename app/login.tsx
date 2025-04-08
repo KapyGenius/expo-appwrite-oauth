@@ -1,43 +1,31 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
-import { Client, Account, ID, Models } from 'react-native-appwrite';
 import React, { useState } from 'react';
 import { Redirect } from 'expo-router';
+import { useAuth } from '@/context/auth';
 
-let client: Client;
-let account: Account;
 
-client = new Client();
-client
-    .setProject('expo-appwrite-auth')
-    .setPlatform('com.kapygenius.expo-appwrite-oauth');
-
-account = new Account(client);
 export default function App() {
-    const [loggedInUser, setLoggedInUser] = useState<Models.User<Models.Preferences> | null>(null);
+    const { user, EmailSignIn, EmailRegister } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
 
     async function login(email: string, password: string) {
-        await account.createEmailPasswordSession(email, password);
-        setLoggedInUser(await account.get());
+        EmailSignIn(email, password);
     }
 
     async function register(email: string, password: string, name: string) {
-        await account.create(ID.unique(), email, password, name);
-        await login(email, password);
-        setLoggedInUser(await account.get());
+        EmailRegister(email, password, name);
     }
 
-    if (loggedInUser) {
+    if (user) {
         return <Redirect href="/" />;
     }
 
     return (
         <View style={styles.root}>
             <Text>
-                {loggedInUser ? `Logged in as ${loggedInUser.name}` : 'Not logged in'}
+                Register or Login
             </Text>
             <View>
                 <TextInput
@@ -72,16 +60,6 @@ export default function App() {
                     onPress={() => register(email, password, name)}
                 >
                     <Text>Register</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={async () => {
-                        await account.deleteSession('current');
-                        setLoggedInUser(null);
-                    }}
-                >
-                    <Text>Logout</Text>
                 </TouchableOpacity>
             </View>
         </View>
