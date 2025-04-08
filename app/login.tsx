@@ -61,6 +61,10 @@ export default function App() {
                     title="Login with Google"
                     onPress={() => OauthSignIn(OAuthProvider.Google)}
                 />
+                <Button
+                    title="Login with Apple"
+                    onPress={() => OauthSignIn(OAuthProvider.Apple)}
+                />
 
             </View>
         </View>
